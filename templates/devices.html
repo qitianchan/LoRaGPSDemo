@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LoRaGPS</title>
+
+    <link rel="stylesheet" href="http://apps.bdimg.com/libs/bootstrap/3.3.4/css/bootstrap.css">
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" media="screen" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+    <div class="container-body">
+        <div class="row">
+            <a href="{{ url_for('edit', device_id=0)}}"><button class="btn btn-primary">添加设备</button></a>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading"> <h3>设备</h3></div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Device ID</th>
+                        <th>Name</th>
+                        <th>Device Type</th>
+                        <th>Longitude</th>
+                        <th>Latitude</th>
+                        <th>Operate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr>
+                        <td>{{ device.id }}</td>
+                        <td>{{ device.name }}</td>
+                        <td><a href="{{ url_for('edit', device_id = device.id) }}">{{ device.type }}</a></td>
+                        <td>{{ device.lng }}</td>
+                        <td>{{ device.lat }}</td>
+                        <td>
+                            <span><a class="btn btn-info" href="{{ url_for('edit', device_id = device.id) }}">Edit</a></span>
+                            <span><a class="btn btn-danger" href="{{ url_for('delete', device_id = device.id) }}">Delete</a></span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+                </table>
+                </div>
+
+            </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</body>
+</html>
