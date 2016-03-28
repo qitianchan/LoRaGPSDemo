@@ -3,22 +3,37 @@
  */
 
 $(document).ready(function(){
-    $('#submit').hide();
+    //$('#submit').hide();
     var targetMarker;
     var count = 0;
     // icheck
     var checked_list = $('#checkedForm');
+    //$('input').iCheck('check');
+    $('input').on('ifChecked', function(event){
+        var targetID = event.target.name.split("_")[1];
+        var inputName = 'device_' + targetID;
+        var i = '#' + 'label_' + targetID;
+        var labelVal = $(i).html().trim();
+        var formInput = '#' + inputName;
+        if($(formInput).length == 0) {
+            var groupID = 'group_' + targetID;
+            var html = '<div class="form-group" id='+ groupID + '><label for='+ inputName + '>'+ labelVal + '</label>' +
+                '<input type = "text" class = "form-control" id='+ inputName + ' name=' + inputName
+                 + ' placeholder="请输入飞行时间"></div>';
+            var child = $(html);
+            checked_list.append(child);
+        }
 
-    $('#baseStation input').on('ifChecked', function(event){
-      console.log(event.type);
-        var html = '<div id="checkedForm"><div class="form-group"><label for="name">名称</label><input type = "text" class = "form-control" id="name" placeholder="请输入名称"></div>';
-        var child = $(html);
-        checked_list.append(child)
     });
   $('input').iCheck({
     checkboxClass: 'icheckbox_flat-green',
     radioClass: 'iradio_flat-green'
   });
+   $('input').on('ifUnchecked', function(event){
+       var targetID = event.target.name.split("_")[1];
+       var formTargetID = '#group_' + targetID;
+       $(formTargetID).remove();
+   });
 
 
     // map
@@ -73,17 +88,16 @@ $(document).ready(function(){
         var name = e.target.name || e.target.device_id;
         var inputName = 'device_' + e.target.device_id;
         var formInput = '#' + inputName;
+        var groupID = 'group_' + e.target.device_id;
+        var checkbox = '#' + 'checkbox_' + e.target.device_id;
         if($(formInput).length == 0) {
-            var html = '<div class="form-group"><label for='+ inputName + '>'+ name + '</label>' +
+            var html = '<div class="form-group" id="'+ groupID + '" ><label for='+ inputName + '>'+ name + '</label>' +
             '<input type = "text" class = "form-control" id='+ inputName + ' name=' + inputName
              + ' placeholder="请输入飞行时间"></div>';
-        var child = $(html);
-        checked_list.append(child);
-        count += 1;
-        if(count >= 4){
-            $('#submit').show();
+            var child = $(html);
+            checked_list.append(child);
         }
-        }
+        $(checkbox).addClass('checked');
 
     };
 

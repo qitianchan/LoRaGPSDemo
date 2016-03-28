@@ -26,10 +26,12 @@
             <section class="panel">
         <header class="panel-heading">
             <h4 class="text-info">点击地图上的标记点选择基站 <span class="small">（四个不同的基站）</span></h4>
-            <span class="tools pull-right">
-                <a class="fa fa-chevron-down" href="javascript:;"></a>
-                <a class="fa fa-times" href="javascript:;"></a>
-             </span>
+            {% for device in devices %}
+            <input type="checkbox" class="checked" id=" checkbox_{{ device.id }}" name="checkbox_{{ device.id }}" />
+            <label id="label_{{device.id}}" for=" checkbox_{{ device.id }}">
+                    {{device.name or device.id }}
+            </label>
+            {% endfor%}
         </header>
         <div class="panel-body">
         <div class="row">
@@ -37,7 +39,14 @@
 
                 <form class="form-horizontal bucket-form" method="POST">
                     <div id="checkedForm">
+                        {% for device in devices %}
+                        <div class="form-group" id="group_{{device.id}}">
+                            <label for="device_{{device.id}}" >{{device.name or device.id }}</label>
+                            <input class="form-control" type="text" placeholder="请输入飞行时间" id="device_{{device.id}}" name="device_{{device.id}}">
+                        </div>
+                    {% endfor%}
                     </div>
+
 
                     <button class="btn btn-primary" type="button" id="submit">
                         Submit
