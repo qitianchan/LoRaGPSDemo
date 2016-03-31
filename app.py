@@ -6,7 +6,7 @@ from extenction import db
 from config import NODE, BASESTATION, NODE_IMG_URI, BASESTATION_IMG_URI
 from flask_wtf import Form
 from wtforms.fields import StringField, TextAreaField, SelectField, FloatField, IntegerField
-from simulate import get_position
+from simulate import get_position, simulate_position
 
 class DeviceProfileForm(Form):
     longitude = FloatField(u'longitude')
@@ -40,22 +40,19 @@ app = create_app()
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        four_node_data = list()
-        res = None
-        for node in request.form:
-            device_id = int(node.rsplit('_')[1])
-            device = Device.get(device_id)
-            if device:
-                lng = device.lng
-                lat = device.lat
-                t = float(request.form[node])
-                data = (lng, lat, t)
-                four_node_data.append(data)
+        target = {}
+        stations = []
+        data = request.form.to_dict()
+        target = [float(data['target[lng]']), float(data['target[lat]'])]
+        for i in range(4):
+            key_lng = 'stations[' + str(i) + '][lng]'
+            key_lat = 'stations[' + str(i) + '][lat]'
+            station = [float(data[key_lng]), float(data[key_lat])]
+            stations.append(station)
 
-        if len(four_node_data) >= 4:
-            res = get_position(four_node_data)
+        res = simulate_position(target, stations)
 
-        return jsonify({'lng': res[0], 'lat': res[1]})
+        return jsonify({'lng': res[0][0], 'lat': res[0][1], 'error': res[1], 'record': res[2], 'original': res[3]})
 
     devices = Device.get_base_station()
     return render_template('index.html', devices=devices)

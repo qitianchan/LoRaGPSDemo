@@ -46,8 +46,9 @@ def simulate_position(target, stations):
     preserve target position and base station position to simulate the position we calculate out
     :param target: target position (23.55, 113.55)
     :param stations:[(23.556, 113.58), (23.548, 113.572), (23.55, 113.57), (23.56, 113.578)]
-    :return: position (?, ?)
+    :return: position (?, ?),
     """
+    record = []
     n = np.array(target)
     br = np.array(stations[0])
     b1 = np.array(stations[1])
@@ -79,9 +80,9 @@ def simulate_position(target, stations):
 
     mu = 0
     sigma = 150
-    # noise = np.random.normal(mu, sigma, 2)
-    # n_cr = np.transpose(results[0:2]) + noise
-    n_cr = np.transpose(results[0:2]) + 20
+    noise = np.random.normal(mu, sigma, 2)
+    n_cr = np.transpose(results[0:2]) + noise
+    # n_cr = np.transpose(results[0:2]) + 20
 
     delta = np.array([0, 0])
     # delta = np.zeros((2, 1))
@@ -89,6 +90,7 @@ def simulate_position(target, stations):
 
     for i in xrange(200):
         n_cr =n_cr + delta
+        record.append(np.sqrt(np.sum(np.abs(n_c - n_cr)**2)))
         r0 = np.sqrt(np.sum(n_cr**2))
         r1 = np.sqrt((n_cr[0] - X[0])**2 + (n_cr[1] - Y[0])**2)
         r2 = np.sqrt((n_cr[0] - X[1])**2 + (n_cr[1] - Y[1])**2)
@@ -102,7 +104,6 @@ def simulate_position(target, stations):
         g2 = (b_c - np.dot( np.array([n_cr]).T, np.array([[1, 1, 1]])).T) / np.dot(np.array([R]).T, np.array([[1, 1]]))
         G = g1.T - g2
 
-
         delta = np.dot(np.dot(np.dot(np.linalg.inv(np.dot(np.dot(G.T, Q), G)), G.T), np.linalg.inv(Q)), h)
         D = np.sum(np.abs(delta))
 
@@ -112,7 +113,8 @@ def simulate_position(target, stations):
     n_cr = n_cr + np.transpose(delta)
     error = np.sqrt(np.sum(np.abs(n_c - n_cr)**2))
     n_ll = br + (n_cr * 180 /(6371*np.pi * 1000))
-    return n_ll
+
+    return n_ll, error, record, [n_c[0], n_c[1]]
 
 
 if __name__ == '__main__':
