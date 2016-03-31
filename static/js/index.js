@@ -155,7 +155,8 @@ $(document).ready(function(){
                                 showSymbol: false,
                                 hoverAnimation: false,
                                 data: data
-                            }]
+                            }],
+                            color: '#FBEFD5'
                         };
                         record.forEach(function(item, i){
                             time.push(i+1 + 'th');
@@ -167,7 +168,7 @@ $(document).ready(function(){
 
                     },
                     error: function(res) {
-                        var message = res.responseJSON.message;
+
                     }
                 });
     };
