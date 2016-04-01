@@ -98,7 +98,7 @@ $(document).ready(function(){
                         map.setCenter(markerPosition);
                         var thtml = '<p>实际位置:(' + target.lng + ', '+ target.lat + ')' +'</p>';
                         var shtml = '<p>估算位置:(' + res.lng + ', '+ res.lat + ')' +'</p>';
-                        var phtml = '<p>定位精度: ' + res.error + '(m)' +'</p>';
+                        var phtml = '<p>定位误差: ' + res.error + '(m)' +'</p>';
                         $('#simulateInfo').empty();
                         $('#simulateInfo').append(thtml);
                         $('#simulateInfo').append(shtml);
