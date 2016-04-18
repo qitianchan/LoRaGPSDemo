@@ -6,7 +6,7 @@ from extenction import db
 from config import NODE, BASESTATION, NODE_IMG_URI, BASESTATION_IMG_URI
 from flask_wtf import Form
 from wtforms.fields import StringField, TextAreaField, SelectField, FloatField, IntegerField
-from simulate import get_position, simulate_position
+from simulate import get_position, simulate_position_v2
 
 class DeviceProfileForm(Form):
     longitude = FloatField(u'longitude')
@@ -44,20 +44,18 @@ def index():
         stations = []
         data = request.form.to_dict()
         target = [float(data['target[lng]']), float(data['target[lat]'])]
-        for i in range(4):
+        standard_deviation = int(data['deviation'])
+
+        for i in range(int(data['count'])):
             key_lng = 'stations[' + str(i) + '][lng]'
             key_lat = 'stations[' + str(i) + '][lat]'
             station = [float(data[key_lng]), float(data[key_lat])]
             stations.append(station)
+        res = simulate_position_v2(target, stations, standard_deviation)
 
-        res = simulate_position(target, stations)
-
-        return jsonify({'lng': res[0][0], 'lat': res[0][1], 'error': res[1], 'record': res[2], 'original': res[3]})
-
+        return jsonify({'result': res})
     devices = Device.get_base_station()
     return render_template('index.html', devices=devices)
-
-
 
 @app.route('/devices')
 def devices():
@@ -88,17 +86,37 @@ def delete(device_id):
 def devices_lnglat():
     data = []
     devices = Device.get_devices()
-    for device in devices:
+    stations = []
+    x_list = '113.5800  113.5800  113.5395  113.5395  113.5800  113.6205  113.6205  113.6205  113.5395  113.4991 113.5395  113.6205  113.6609'.split()
+    for x in x_list:
+        s = [float(x),0]
+        stations.append(s)
+    count = 0
+    y_list =  '23.5560   23.6027   23.5794   23.5326   23.5028   23.5326   23.5794   23.6261   23.6261   23.5560 23.4859   23.4859'.split()
+
+    for y in y_list:
+        stations[count][1] = float(y)
+        count += 1
+
+    for st in stations:
         d = {}
-        d['device_id'] = device.id
-        d['lng'] = device.lng
-        d['lat'] = device.lat
-        d['name'] = device.name
-        if device.type == NODE:
-            d['icon_uri'] = url_for('static', filename=NODE_IMG_URI)
-        else:
-            d['icon_uri'] = url_for('static', filename=BASESTATION_IMG_URI)
+        d['lng'] = st[0]
+        d['lat'] = st[1]
+        d['name'] = 'hello'
+        d['icon_uri'] = url_for('static', filename=BASESTATION_IMG_URI)
         data.append(d)
+    #
+    # for device in devices:
+    #     d = {}
+    #     d['device_id'] = device.id
+    #     d['lng'] = device.lng
+    #     d['lat'] = device.lat
+    #     d['name'] = device.name
+    #     if device.type == NODE:
+    #         d['icon_uri'] = url_for('static', filename=NODE_IMG_URI)
+    #     else:
+    #         d['icon_uri'] = url_for('static', filename=BASESTATION_IMG_URI)
+    #     data.append(d)
     return jsonify({'data': data})
 
 

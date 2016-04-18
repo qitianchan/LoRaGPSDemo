@@ -23,17 +23,33 @@
             <p>基于LoRa技术的定位系统，通过在固定位置部署4个以上LoRaWAN基站，服务器根据目标节点发送信号到达各基站的飞行时间差（TDoA-Time Difference on Arrival）对目标节点的位置进行估算。该系统通过添加随机噪声来模拟实际环境中由于信号衰落等造成的时间误差。实际应用中，服务器通过各基站上传信号的时间戳来获取TDoA，进而计算出目标节点的位置。</p>
 
             <p>左图是对xx定位系统的模拟，可演示对方圆5公里内目标的定位效果。可以选择不同的基站进行模拟</p>
-            <section class="panel">
-        <header class="panel-heading">
             <h4 class="text-info">点击地图上的标记点选择实际点 <span class="small">(估算位置以小红旗表示）</span></h4>
+                <form action="" class="form">
+                    <div class="data-box">
+                    <div class="col-sm-6">
+                        <div class=""><h5 class="text-info">基站数量</h5></div>
+                        <div class="radio"><label><input type="radio" value="4" name="stationCount" id="station-four" checked>4个基站</label></div>
+                        <div class="radio"><label><input type="radio" value="6" name="stationCount" id="station-six">6个基站</label></div>
+                        <div class="radio"><label ><input type="radio" value="8" name="stationCount" id="station-eight">8个基站</label></div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div>
+                            <h5 class="text-info">标准误差值（&mu;s）</h5>
+                        </div>
+                        <div class="radio"><label><input type="radio" value="300" name="deviation" id="deviation-300" checked>1&mu;s</label></div>
+                        <div class="radio"><label><input type="radio" value="450" name="deviation" id="deviation-450">1.5&mu;s</label></div>
+                        <div class="radio"><label><input type="radio" value="600" name="deviation" id="deviaation-600">2&mu;s</label></div>
+                    </div>
+            </div>
+
+            </form>
+            <div class="data-box" style="margin-bottom: 8px;">
+                <div><h4 class="text-info">误差：（m）</h4><h4 id = "error" class="text-danger"></h4></div>
+            </div>
             <div class="text-info" id="simulateInfo"></div>
             <div id="chart" style="width: 600px;height:400px;"></div>
 
 
-        </header>
-        <div class="panel-body">
-        </div>
-        </section>
 <p>该系统通过添加随机噪声来模拟实际环境中由于信号衰落等造成的时间误差。实际应用中，服务器通过各基站上传信号的时间戳来获取TDoA，进而计算出目标节点的位置。</p>
         </div>
 

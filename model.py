@@ -14,11 +14,11 @@ class Device(db.Model):
 
     @classmethod
     def get_devices(cls):
-        return cls.query.limit(4).all()
+        return cls.query.limit(8).all()
 
     @classmethod
     def get_base_station(cls):
-        return cls.query.filter(Device.type == BASESTATION).limit(4).all()
+        return cls.query.filter(Device.type == BASESTATION).limit(8).all()
 
     def save(self):
         db.session.add(self)
