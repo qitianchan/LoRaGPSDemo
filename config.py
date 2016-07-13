@@ -54,3 +54,11 @@ BASESTATION = 1
 NODE = 2
 BASESTATION_IMG_URI = 'image/mark_station.png'
 NODE_IMG_URI = 'image/mark_node.png'
+
+# Ourself Server websocket infomation
+LORA_APP_EUI = '1BA69322BC45C091'
+LORA_TOKEN = 'AmYFT7bEIPgZuNHysVgqyg'
+LORA_HOST = '183.230.40.231'
+LORA_PORT = 8100
+NAMESPACE_PATH = '/test'
+

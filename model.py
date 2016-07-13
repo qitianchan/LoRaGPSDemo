@@ -17,6 +17,10 @@ class Device(db.Model):
         return cls.query.limit(8).all()
 
     @classmethod
+    def get_four_base_stations(cls):
+        return cls.query.limit(4).all()
+
+    @classmethod
     def get_base_station(cls):
         return cls.query.filter(Device.type == BASESTATION).limit(8).all()
 

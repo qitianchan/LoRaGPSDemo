@@ -1,3 +1,33 @@
+async_mode = None
+
+if async_mode is None:
+    try:
+        import eventlet
+        async_mode = 'eventlet'
+    except ImportError:
+        pass
+
+    if async_mode is None:
+        try:
+            from gevent import monkey
+            async_mode = 'gevent'
+        except ImportError:
+            pass
+
+    if async_mode is None:
+        async_mode = 'threading'
+
+    print('async_mode is ' + async_mode)
+
+# monkey patching is necessary because this application uses a background
+# thread
+if async_mode == 'eventlet':
+    import eventlet
+    eventlet.monkey_patch()
+elif async_mode == 'gevent':
+    from gevent import monkey
+    monkey.patch_all()
+
 from flask import Flask, render_template, redirect, url_for, jsonify, request
 from config import DefaultConfig
 from model import Device
@@ -7,6 +37,8 @@ from config import NODE, BASESTATION, NODE_IMG_URI, BASESTATION_IMG_URI
 from flask_wtf import Form
 from wtforms.fields import StringField, TextAreaField, SelectField, FloatField, IntegerField
 from simulate import get_position, simulate_position_v2
+from message_handle import listen_thread
+from extentions import io
 
 
 class DeviceProfileForm(Form):
@@ -30,13 +62,15 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(DefaultConfig)
     db.init_app(app)
+    listen_thread()
+
     with app.app_context():
         # Extensions like Flask-SQLAlchemy now know what the "current" app
         # is while within this block. Therefore, you can now run........
         db.create_all()
     return app
 app = create_app()
-
+io.init_app(app, async_mode=async_mode)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -56,7 +90,7 @@ def index():
 
         return jsonify({'result': res})
     devices = Device.get_base_station()
-    return render_template('index.html', devices=devices)
+    return render_template('position.html', devices=devices)
 
 
 @app.route('/devices')
@@ -82,6 +116,21 @@ def edit(device_id):
 def delete(device_id):
     Device.delete(device_id)
     return redirect(url_for('devices'))
+
+
+@app.route('/stations_lnglat', methods=['get'])
+def stations_lnglat():
+    stations = Device.get_four_base_stations()
+    data = []
+    for st in stations:
+        d = {}
+        d['lng'] = st.lng
+        d['lat'] = st.lat
+        d['name'] = 'hello'
+        d['icon_uri'] = url_for('static', filename=BASESTATION_IMG_URI)
+        data.append(d)
+
+    return jsonify({'data': data})
 
 
 @app.route('/devices_lnglat',  methods=['GET'])
@@ -123,5 +172,5 @@ def devices_lnglat():
 
 
 if __name__ == '__main__':
-    app.run(port=8123)
+    io.run(app, port=8123, use_reloader=False)
 
