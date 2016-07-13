@@ -8,6 +8,7 @@ from flask_wtf import Form
 from wtforms.fields import StringField, TextAreaField, SelectField, FloatField, IntegerField
 from simulate import get_position, simulate_position_v2
 
+
 class DeviceProfileForm(Form):
     longitude = FloatField(u'longitude')
     latitude = FloatField(u'latitude')
@@ -56,6 +57,7 @@ def index():
         return jsonify({'result': res})
     devices = Device.get_base_station()
     return render_template('index.html', devices=devices)
+
 
 @app.route('/devices')
 def devices():
