@@ -1,7 +1,6 @@
 # coding: utf-8
 from __future__ import division
 from websocket import create_connection
-
 from redis import StrictRedis
 import sqlite3
 import json
@@ -15,6 +14,7 @@ from config import DefaultConfig
 import math
 from extentions import io
 import logging
+import datetime
 
 message_logger = logging.getLogger('message')
 message_logger.setLevel(logging.DEBUG)
@@ -25,10 +25,10 @@ socketio_logger.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-f_message_handle = logging.FileHandler('logs/message.log')
+f_message_handle = logging.FileHandler(DefaultConfig.MSG_FILE_LOG)
 f_message_handle.setLevel(logging.INFO)
 f_message_handle.setFormatter(formatter)
-f_socketio_handle = logging.FileHandler('logs/socketio.log')
+f_socketio_handle = logging.FileHandler(DefaultConfig.SOCKETIO_FILE_LOG)
 f_socketio_handle.setLevel(logging.INFO)
 
 
@@ -45,7 +45,9 @@ pi = math.pi
 a = 6378245.0
 ee = 0.00669342162296594323
 
-DEVS_EUI = ['BE000000000001B3', 'BE00000000000009', 'BE00000000000005']
+cx = sqlite3.connect(DefaultConfig.DATABASE_PATH)
+
+DEVS_EUI = ['BE7A0000000003A1', 'BE7A0000000003A4', 'BE00000000000005']
 
 TIME_LIMIT = 172000         # which means 13:40:00
 HOST = LORA_HOST
@@ -102,9 +104,11 @@ def cook_rx_message(data):
     :param message:
     :return:
     """
-    message_logger.debug(json.dumps(data))
 
-    if data['EUI'].upper() in DEVS_EUI:
+    # cx = sqlite3.connect(DefaultConfig.DATABASE_PATH)
+    global cx
+    if data['EUI'].upper() in get_nodes(cx):
+        message_logger.debug(json.dumps(data))
         format = '%Y%m%d %H%M%S'
         value = time.localtime(data['ts']/1000)
         btime = time.strftime(format, value)
@@ -113,25 +117,31 @@ def cook_rx_message(data):
         snr = data['snr']
         seq = data['fcnt']
         freq = data['freq']
-        print(btime)
-        print(payload)
         lnglat = (0, 0)
-        if payload[16:28] != '000000000000':
+        if payload != '000000000000':
 
             try:
-                lnglat = get_lnglat(payload, 1)
+                lnglat = get_lnglat(payload, 0)
             except Exception as e:
-                print('parse payload wrong')
+                raise e
+                # print('parse payload wrong')
 
             message_logger.info('EUI:{0}- payload:{1} - lng:{2} - lat:{3} '.format(data['EUI'], data['data'], lnglat[0], lnglat[1]))
 
             test_data = (None, data['EUI'].upper(), lnglat[0], lnglat[1], rssi, snr, seq, freq, time.time(), None)
 
             try:
+                # 记录收到的数据
+                position_record = (None, datetime.datetime.now(), lnglat[0], lnglat[1], data['EUI'].upper())
+                record_postion(cx, position_record)
+
                 # 发送给前端数据
                 io.emit('new data', {'eui': test_data[1], 'lng': test_data[2], 'lat': test_data[3], 'rssi': test_data[4],
                                      'snr': test_data[5], 'seq': test_data[6], 'freq': test_data[7], 'createtime': test_data[8],
                                      'datetime': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(test_data[8]))},
+                        namespace='/lnglat/' + data['EUI'])
+                # 发送全部
+                io.emit('new', {'eui': data['EUI'], 'lng': lnglat[0], 'lat': lnglat[1], 'createtime': test_data[8]},
                         namespace='/lnglat')
 
                 socketio_logger.debug('emit new data')
@@ -155,8 +165,8 @@ def get_lnglat(payload, dev_type):
     latitude = -1
     try:
         if dev_type == 0:
-            latitude = int(payload[16:22],16)*90.0/8388607
-            longitude = int(payload[22:28],16)*180.0/8388607
+            latitude = int(payload[0:6],16)*90.0/8388607
+            longitude = int(payload[6:12],16)*180.0/8388607
         elif dev_type == 1:
             # 萌宝设备
             data = unhexlify(payload.encode(encoding='utf-8', errors='strict'))
@@ -183,6 +193,7 @@ def get_lnglat(payload, dev_type):
         longitude = int(payload[22:28],16)*180.0/8388607
     if longitude == -1 or latitude == -1:
         return (-1, -1)
+    # return (longitude, latitude)
     return gps2gd((longitude, latitude))
 
 
@@ -236,10 +247,26 @@ def trans_lat(lnglat):
     return ret
 
 
+# 数据库操作
+def get_nodes(cx):
+    exe = 'SELECT eui FROM devices WHERE type = 2'
+    return [node[0] for node in cx.execute(exe).fetchall()]
+
+# 更新并且记录位置
+def record_postion(cx, value):
+    # update
+    update_exe = 'UPDATE devices SET lng={0}, lat={1} WHERE eui="{2}"'.format(value[2], value[3], value[4])
+    cx.execute(update_exe)
+    # 记录
+    exe = 'INSERT INTO position_record VALUES (?, ?, ?, ?, ?)'
+    cx.execute(exe, value)
+
+    cx.commit()
+
 if __name__ == '__main__':
     # socketio_cli = SocketIO(host=HOST, port=PORT, params={'app_eui': APP_EUI, 'token': TOKEN})
     # test_namespace = socketio_cli.define(TestNamespace, '/test')
     # socketio_cli.wait()
     # print(get_lnglat('0001020304050607205BDE50C9660012', 0))
     # print(get_lnglat('323234352E31343530342C4E2C31313333362E34323236382C45', 1))
-    message_logger.info('new message')
+    print(record_postion(cx, (None, datetime.datetime.now(), 116.362, 39.872, 'BE7A0000000003A4')))

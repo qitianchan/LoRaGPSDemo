@@ -13,18 +13,23 @@
     <nav class="navbar navbar-default navbar-fix-top">
       <div class="container-fluid">
         <ul class="nav navbar-nav">
-          <li><a href="/">Home</a></li>
+          <li><a href="{{url_for('index')}}">Home</a></li>
           <li><a href="{{ url_for('devices') }}">基站与节点</a></li>
         </ul>
       </div>
     </nav>
+      <ol class="breadcrumb">
+        <li><a href="{{url_for('index')}}">全部</a></li>
+        <li id="device-info" class="active" data-eui="{{device.eui}}" data-device-id="{{device.id}}">{{ device.name }}</li>
+      </ol>
+
       <article class="row">
         <div class=" col-xs-12 col-md-12 devices-map-container" id="mapContainer">
         </div>
       </article>
       <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=134542f782807947857e954af5848639"></script>
-    <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
-      <script type="text/javascript" src="{{ url_for('static', filename='js/position.js') }}"></script>
+
+      <script type="text/javascript" src="{{ url_for('static', filename='js/info.js') }}"></script>
       <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
       <script src="//cdn.bootcss.com/socket.io/1.4.5/socket.io.min.js"></script>
     </body>

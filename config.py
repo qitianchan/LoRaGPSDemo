@@ -48,6 +48,9 @@ class DefaultConfig(object):
     WTF_CSRF_ENABLED = True
     WTF_CSRF_SECRET_KEY = "\x99A\x8f\x0f\xe5tG\xe6f\t\xfe\xe1Y\xe9X,\xb6\xdf,\xea\x12q\xc9\xc5"
 
+    MSG_FILE_LOG = os.path.join(_basedir, 'logs/message.log')
+    SOCKETIO_FILE_LOG = os.path.join(_basedir, 'logs/socketio.log')
+
 
 # Const Value
 BASESTATION = 1
@@ -56,8 +59,8 @@ BASESTATION_IMG_URI = 'image/mark_station.png'
 NODE_IMG_URI = 'image/mark_node.png'
 
 # Ourself Server websocket infomation
-LORA_APP_EUI = '1BA69322BC45C091'
-LORA_TOKEN = 'AmYFT7bEIPgZuNHysVgqyg'
+LORA_APP_EUI = 'FFFFFFFFFFFFFFFF'
+LORA_TOKEN = 'Ik8T-cXls3TWhtNtjhzc5A'
 LORA_HOST = '183.230.40.231'
 LORA_PORT = 8100
 NAMESPACE_PATH = '/test'

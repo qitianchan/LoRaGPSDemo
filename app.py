@@ -30,7 +30,7 @@ elif async_mode == 'gevent':
 
 from flask import Flask, render_template, redirect, url_for, jsonify, request
 from config import DefaultConfig
-from model import Device
+from model import Device, PositionRecord
 from flask_sqlalchemy import SQLAlchemy
 from extenction import db
 from config import NODE, BASESTATION, NODE_IMG_URI, BASESTATION_IMG_URI
@@ -39,13 +39,14 @@ from wtforms.fields import StringField, TextAreaField, SelectField, FloatField, 
 from simulate import get_position, simulate_position_v2
 from message_handle import listen_thread
 from extentions import io
-
+from sqlalchemy import desc
 
 class DeviceProfileForm(Form):
     longitude = FloatField(u'longitude')
     latitude = FloatField(u'latitude')
     type = SelectField(u'type')
     name = StringField(u'name')
+    eui = StringField(u'eui')
 
     def save_form(self, device):
         if isinstance(device, Device):
@@ -53,6 +54,7 @@ class DeviceProfileForm(Form):
             device.lat = float(self.latitude.data)
             device.type = int(self.type.data)
             device.name = self.name.data
+            device.eui = self.eui.data.strip().upper()
             device.save()
         else:
             raise ValueError()
@@ -120,14 +122,16 @@ def delete(device_id):
 
 @app.route('/stations_lnglat', methods=['get'])
 def stations_lnglat():
-    stations = Device.get_four_base_stations()
+    devices = Device.get_devices()
     data = []
-    for st in stations:
+    for dev in devices:
         d = {}
-        d['lng'] = st.lng
-        d['lat'] = st.lat
-        d['name'] = 'hello'
-        d['icon_uri'] = url_for('static', filename=BASESTATION_IMG_URI)
+        d['lng'] = dev.lng
+        d['lat'] = dev.lat
+        d['name'] = dev.name
+        d['eui'] = dev.eui
+        d['icon_uri'] = url_for('static', filename=BASESTATION_IMG_URI) if dev.type == 1 else url_for('static', filename=NODE_IMG_URI)
+        d['info_url'] = url_for('info', device_id=dev.id)
         data.append(d)
 
     return jsonify({'data': data})
@@ -169,6 +173,23 @@ def devices_lnglat():
     #         d['icon_uri'] = url_for('static', filename=BASESTATION_IMG_URI)
     #     data.append(d)
     return jsonify({'data': data})
+
+
+@app.route('/info/<device_id>', methods=['GET'])
+def info(device_id):
+    device = Device.get(device_id)
+    if device:
+        return render_template('info.html', device=device)
+    else:
+        return redirect('index')
+
+
+@app.route('/info/position_records', methods=['POST'])
+def position_records():
+    records = [{'create_time': r.create_time, 'lng': r.lng, 'lat': r.lat}
+               for r in PositionRecord.get_records(request.form.get('device_eui'), 3)]
+    records.reverse()
+    return jsonify({'data': records})
 
 
 if __name__ == '__main__':

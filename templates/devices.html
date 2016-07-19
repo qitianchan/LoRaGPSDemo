@@ -13,7 +13,7 @@
           <div class="container-fluid">
             <ul class="nav navbar-nav">
               <li><a href="/">Home</a></li>
-              <li><a href="{{ url_for('devices') }}">基站</a></li>
+              <li><a href="{{ url_for('devices') }}">基站与节点</a></li>
             </ul>
           </div>
         </nav>
@@ -31,10 +31,12 @@
                     <tr>
                         <th>Device ID</th>
                         <th>Name</th>
+                        <th>EUI</th>
                         <th>Device Type</th>
                         <th>Longitude</th>
                         <th>Latitude</th>
                         <th>Operate</th>
+                        <th>详情</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -42,6 +44,7 @@
                     <tr>
                         <td>{{ device.id }}</td>
                         <td>{{ device.name }}</td>
+                        <td>{{ device.eui }}</td>
                         <td><a href="{{ url_for('edit', device_id = device.id) }}">{{ device.type }}</a></td>
                         <td>{{ device.lng }}</td>
                         <td>{{ device.lat }}</td>
@@ -49,6 +52,7 @@
                             <span><a class="btn btn-info" href="{{ url_for('edit', device_id = device.id) }}">Edit</a></span>
                             <span><a class="btn btn-danger" href="{{ url_for('delete', device_id = device.id) }}">Delete</a></span>
                         </td>
+                        <td><span><a href="{{url_for('info', device_id=device.id)}}">详情</a></span></td>
                     </tr>
                     {% endfor %}
                 </tbody>
